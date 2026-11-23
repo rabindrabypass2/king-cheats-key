@@ -19,13 +19,12 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
-import android.widget.LinearLayout;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -36,10 +35,9 @@ public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
     private ProgressBar progressBar;
-    private LinearLayout lockOverlay;
-    private Button btnJoinTelegramOverlay;
-    private Button btnVerifyJoined;
-    private Button btnExitApp;
+    private FrameLayout lockOverlay;
+    private AppCompatButton btnJoined;
+    private AppCompatButton btnJoinChannel;
 
     private boolean hasClickedJoin = false;
     private boolean isUnlocked = false;
@@ -73,9 +71,8 @@ public class MainActivity extends AppCompatActivity {
         webView = findViewById(R.id.webView);
         progressBar = findViewById(R.id.progressBar);
         lockOverlay = findViewById(R.id.lockOverlay);
-        btnJoinTelegramOverlay = findViewById(R.id.btnJoinTelegramOverlay);
-        btnVerifyJoined = findViewById(R.id.btnVerifyJoined);
-        btnExitApp = findViewById(R.id.btnExitApp);
+        btnJoined = findViewById(R.id.btnJoined);
+        btnJoinChannel = findViewById(R.id.btnJoinChannel);
 
         setupButtons();
         setupWebView();
@@ -83,17 +80,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupButtons() {
-        btnJoinTelegramOverlay.setOnClickListener(v -> openTelegramChannel());
+        btnJoinChannel.setOnClickListener(v -> openTelegramChannel());
 
-        btnVerifyJoined.setOnClickListener(v -> {
+        btnJoined.setOnClickListener(v -> {
             if (!hasClickedJoin) {
-                Toast.makeText(MainActivity.this, "Please click 'Join Official Telegram' first!", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, "Please click JOIN CHANNEL first!", Toast.LENGTH_SHORT).show();
             } else {
                 unlockAndLoadApp();
             }
         });
-
-        btnExitApp.setOnClickListener(v -> finishAffinity());
     }
 
     private void checkTelegramLock() {
@@ -103,37 +98,9 @@ public class MainActivity extends AppCompatActivity {
         if (previouslyJoined) {
             unlockAndLoadApp();
         } else {
-            showMandatoryTelegramDialog();
+            isUnlocked = false;
+            lockOverlay.setVisibility(View.VISIBLE);
         }
-    }
-
-    private void showMandatoryTelegramDialog() {
-        isUnlocked = false;
-        lockOverlay.setVisibility(View.VISIBLE);
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Join Official Telegram");
-        builder.setMessage("You must join our official Telegram channel to get your key and use King Cheats Key App.\\n\\nPlease join the channel to unlock access.");
-        builder.setCancelable(false);
-
-        builder.setPositiveButton("Join Channel", (dialog, which) -> {
-            openTelegramChannel();
-        });
-
-        builder.setNegativeButton("I Have Joined", (dialog, which) -> {
-            if (hasClickedJoin) {
-                unlockAndLoadApp();
-            } else {
-                Toast.makeText(MainActivity.this, "Please click 'Join Channel' first!", Toast.LENGTH_LONG).show();
-                showMandatoryTelegramDialog();
-            }
-        });
-
-        builder.setNeutralButton("Exit", (dialog, which) -> finishAffinity());
-
-        AlertDialog dialog = builder.create();
-        dialog.setCanceledOnTouchOutside(false);
-        dialog.show();
     }
 
     private void openTelegramChannel() {
@@ -152,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
         prefs.edit().putBoolean(KEY_TELEGRAM_JOINED, true).apply();
 
         lockOverlay.setVisibility(View.GONE);
-        Toast.makeText(this, "Access Unlocked! Loading King Cheats...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Access Unlocked!", Toast.LENGTH_SHORT).show();
 
         webView.loadUrl(TARGET_URL);
     }
