@@ -1,5 +1,7 @@
 package com.kingcheats.keyapp;
 
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -21,6 +23,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,8 +39,8 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private ProgressBar progressBar;
     private FrameLayout lockOverlay;
-    private AppCompatButton btnJoined;
-    private AppCompatButton btnJoinChannel;
+    private TextView tvDialogTitle;
+    private AppCompatButton btnTelegramAction;
 
     private boolean hasClickedJoin = false;
     private boolean isUnlocked = false;
@@ -71,24 +74,64 @@ public class MainActivity extends AppCompatActivity {
         webView = findViewById(R.id.webView);
         progressBar = findViewById(R.id.progressBar);
         lockOverlay = findViewById(R.id.lockOverlay);
-        btnJoined = findViewById(R.id.btnJoined);
-        btnJoinChannel = findViewById(R.id.btnJoinChannel);
+        tvDialogTitle = findViewById(R.id.tvDialogTitle);
+        btnTelegramAction = findViewById(R.id.btnTelegramAction);
 
+        startGlowingBlinkAnimation();
         setupButtons();
         setupWebView();
         checkTelegramLock();
     }
 
-    private void setupButtons() {
-        btnJoinChannel.setOnClickListener(v -> openTelegramChannel());
+    private void startGlowingBlinkAnimation() {
+        if (tvDialogTitle == null) return;
 
-        btnJoined.setOnClickListener(v -> {
+        // Glowing blinking alpha animation
+        ObjectAnimator blinkAlpha = ObjectAnimator.ofFloat(tvDialogTitle, "alpha", 0.25f, 1.0f);
+        blinkAlpha.setDuration(550);
+        blinkAlpha.setRepeatMode(ValueAnimator.REVERSE);
+        blinkAlpha.setRepeatCount(ValueAnimator.INFINITE);
+        blinkAlpha.start();
+
+        // Subtle pulsing scale
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(tvDialogTitle, "scaleX", 0.97f, 1.03f);
+        scaleX.setDuration(550);
+        scaleX.setRepeatMode(ValueAnimator.REVERSE);
+        scaleX.setRepeatCount(ValueAnimator.INFINITE);
+        scaleX.start();
+
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(tvDialogTitle, "scaleY", 0.97f, 1.03f);
+        scaleY.setDuration(550);
+        scaleY.setRepeatMode(ValueAnimator.REVERSE);
+        scaleY.setRepeatCount(ValueAnimator.INFINITE);
+        scaleY.start();
+    }
+
+    private void setupButtons() {
+        btnTelegramAction.setOnClickListener(v -> {
             if (!hasClickedJoin) {
-                Toast.makeText(MainActivity.this, "Please click JOIN CHANNEL first!", Toast.LENGTH_SHORT).show();
+                // Click 1: Open telegram channel & change button state to JOINED
+                openTelegramChannel();
+                setButtonToJoinedState();
             } else {
+                // Click 2: Unlock and enter app
                 unlockAndLoadApp();
             }
         });
+    }
+
+    private void setButtonToJoinedState() {
+        hasClickedJoin = true;
+        btnTelegramAction.setText("JOINED");
+        btnTelegramAction.setBackgroundResource(R.drawable.btn_joined_bg);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (hasClickedJoin && !isUnlocked) {
+            setButtonToJoinedState();
+        }
     }
 
     private void checkTelegramLock() {
