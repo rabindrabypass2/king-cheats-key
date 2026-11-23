@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
@@ -20,7 +22,6 @@ import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -35,13 +36,10 @@ public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
     private ProgressBar progressBar;
-    private TextView tvSubStatus;
     private LinearLayout lockOverlay;
     private Button btnJoinTelegramOverlay;
     private Button btnVerifyJoined;
     private Button btnExitApp;
-    private Button btnTelegramTop;
-    private Button btnReload;
 
     private boolean hasClickedJoin = false;
     private boolean isUnlocked = false;
@@ -61,18 +59,23 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
+
+        // Full Screen Window
+        getWindow().setFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN
+        );
+
         setContentView(R.layout.activity_main);
 
         webView = findViewById(R.id.webView);
         progressBar = findViewById(R.id.progressBar);
-        tvSubStatus = findViewById(R.id.tvSubStatus);
         lockOverlay = findViewById(R.id.lockOverlay);
         btnJoinTelegramOverlay = findViewById(R.id.btnJoinTelegramOverlay);
         btnVerifyJoined = findViewById(R.id.btnVerifyJoined);
         btnExitApp = findViewById(R.id.btnExitApp);
-        btnTelegramTop = findViewById(R.id.btnTelegramTop);
-        btnReload = findViewById(R.id.btnReload);
 
         setupButtons();
         setupWebView();
@@ -81,7 +84,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupButtons() {
         btnJoinTelegramOverlay.setOnClickListener(v -> openTelegramChannel());
-        btnTelegramTop.setOnClickListener(v -> openTelegramChannel());
 
         btnVerifyJoined.setOnClickListener(v -> {
             if (!hasClickedJoin) {
@@ -92,15 +94,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         btnExitApp.setOnClickListener(v -> finishAffinity());
-
-        btnReload.setOnClickListener(v -> {
-            if (isUnlocked) {
-                tvSubStatus.setText("Reloading...");
-                webView.reload();
-            } else {
-                Toast.makeText(MainActivity.this, "Join our Telegram channel first to use this app!", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     private void checkTelegramLock() {
@@ -117,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
     private void showMandatoryTelegramDialog() {
         isUnlocked = false;
         lockOverlay.setVisibility(View.VISIBLE);
-        tvSubStatus.setText("Action Required: Join Telegram");
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Join Official Telegram");
@@ -160,7 +152,6 @@ public class MainActivity extends AppCompatActivity {
         prefs.edit().putBoolean(KEY_TELEGRAM_JOINED, true).apply();
 
         lockOverlay.setVisibility(View.GONE);
-        tvSubStatus.setText("Ready");
         Toast.makeText(this, "Access Unlocked! Loading King Cheats...", Toast.LENGTH_SHORT).show();
 
         webView.loadUrl(TARGET_URL);
@@ -207,13 +198,11 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                tvSubStatus.setText("Connecting: " + Uri.parse(url).getHost());
                 injectBypassScript();
             }
 
             @Override
             public void onPageFinished(WebView view, String url) {
-                tvSubStatus.setText("Loaded");
                 injectBypassScript();
 
                 handler.postDelayed(() -> injectBypassScript(), 1500);
@@ -235,9 +224,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-                if (request.isForMainFrame()) {
-                    tvSubStatus.setText("Connection Error");
-                }
+                // Ignore non-fatal frame errors
             }
         });
     }
