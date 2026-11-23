@@ -3,9 +3,7 @@ package com.kingcheats.keyapp;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -33,8 +31,6 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TARGET_URL = "https://monteolympus.com/s/king_cheats-register_update";
     private static final String TELEGRAM_CHANNEL_URL = "https://t.me/+5-JL1-A7v2JlZWU9";
-    private static final String PREFS_NAME = "KingCheatsPrefs";
-    private static final String KEY_TELEGRAM_JOINED = "is_telegram_joined";
 
     private WebView webView;
     private ProgressBar progressBar;
@@ -80,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
         startGlowingBlinkAnimation();
         setupButtons();
         setupWebView();
-        checkTelegramLock();
+        showTelegramLockEveryTime();
     }
 
     private void startGlowingBlinkAnimation() {
@@ -134,16 +130,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void checkTelegramLock() {
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        boolean previouslyJoined = prefs.getBoolean(KEY_TELEGRAM_JOINED, false);
-
-        if (previouslyJoined) {
-            unlockAndLoadApp();
-        } else {
-            isUnlocked = false;
-            lockOverlay.setVisibility(View.VISIBLE);
-        }
+    private void showTelegramLockEveryTime() {
+        // Always show dialog on every fresh app open
+        isUnlocked = false;
+        hasClickedJoin = false;
+        btnTelegramAction.setText("JOIN CHANNEL");
+        btnTelegramAction.setBackgroundResource(R.drawable.btn_channel_bg);
+        lockOverlay.setVisibility(View.VISIBLE);
     }
 
     private void openTelegramChannel() {
@@ -158,9 +151,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void unlockAndLoadApp() {
         isUnlocked = true;
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        prefs.edit().putBoolean(KEY_TELEGRAM_JOINED, true).apply();
-
         lockOverlay.setVisibility(View.GONE);
         Toast.makeText(this, "Access Unlocked!", Toast.LENGTH_SHORT).show();
 
